@@ -136,16 +136,36 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-          // ELOQUENT
-        $employee = Employee::find($id);
+
+        // Get File
+            $file = $request->file('cv');
+
+        if ($file != null) {
+            $originalFilename = $file->getClientOriginalName();
+            $encryptedFilename = $file->hashName();
+
+        // Store File
+            $file->store('public/files');
+        }
+
+        // ELOQUENT
+        $employee = New Employee;
         $employee->firstname = $request->firstName;
         $employee->lastname = $request->lastName;
         $employee->email = $request->email;
         $employee->age = $request->age;
         $employee->position_id = $request->position;
+
+        if ($file != null) {
+            $employee->original_filename = $originalFilename;
+            $employee->encrypted_filename = $encryptedFilename;
+        }
+
         $employee->save();
+
         return redirect()->route('employees.index');
     }
+
 
     /**
      * Remove the specified resource from storage.
