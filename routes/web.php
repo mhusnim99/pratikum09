@@ -4,9 +4,11 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +43,8 @@ Route::group(['middleware'=>'auth'],function(){
     Route::get('home', [HomeController::class, 'index'])->name('home');
     Route::get('profile', ProfileController::class)->name('profile');
     Route::resource('employees', EmployeeController::class);
+    
+    Route::get('download-file/{employeeId}', [EmployeeController::class, 'downloadFile'])->name('employees.downloadFile');
 });
 
 //Meletakkan File pada Local Disk
@@ -77,3 +81,58 @@ Route::get('/retrieve-public-file', function() {
 
     return $contents;
 });
+
+//Mendownload File local
+Route::get('/download-local-file', function() {
+    return Storage::download('local-example.txt', 'local file');
+});
+
+//Mendownload File public
+Route::get('/download-public-file', function() {
+    return Storage::download('public/public-example.txt', 'public file');
+});
+
+
+//Menampilkan URL, Path dan Size dari File
+Route::get('/file-url', function() {
+    // Just prepend "/storage" to the given path and return a relative URL
+    $url = Storage::url('local-example.txt');
+    return $url;
+});
+
+Route::get('/file-size', function() {
+    $size = Storage::size('local-example.txt');
+    return $size;
+});
+
+Route::get('/file-path', function() {
+    $path = Storage::path('local-example.txt');
+    return $path;
+});
+
+
+//menyimpan file via form
+Route::get('/upload-example', function() {
+    return view('upload_example');
+});
+
+Route::post('/upload-example', function(Request $request) {
+    $path = $request->file('avatar')->store('public');
+    return $path;
+})->name('upload-example');
+
+
+//mengahps file pada storgae
+Route::get('/delete-local-file', function(Request $request) {
+    Storage::disk('local')->delete('local-example.txt');
+    return 'Deleted';
+});
+
+Route::get('/delete-public-file', function(Request $request) {
+    Storage::disk('public')->delete('public-example.txt');
+    return 'Deleted';
+});
+
+
+//operasi download file employee
+
